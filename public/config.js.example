@@ -1,0 +1,4 @@
+// please check the correct URL from Firebase console after the first "firebase deploy"
+const CLOUD_FUNCTION_URL = 'https://us-central1-YOUR_PROJECT_NAME_HERE.cloudfunctions.net';
+// https://www.mapbox.com/help/define-access-token/
+L.mapbox.accessToken = 'pk.---YOUR_MAPBOX_ACCESS_TOKEN_HERE---';

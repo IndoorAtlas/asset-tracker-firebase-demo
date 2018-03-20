@@ -1,0 +1,9 @@
+{
+  "rules": {
+    "$apikey": {
+      ".validate": "$apikey.length < 100",
+      ".read": "$apikey === auth.uid",
+      ".write": "auth.admin == true"
+    }
+  }
+}
