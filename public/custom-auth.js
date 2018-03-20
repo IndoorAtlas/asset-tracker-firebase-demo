@@ -26,6 +26,8 @@ function signIn(groupId, callback) {
 
 firebase.auth().onAuthStateChanged(function(user) {
   const groupId = getGroupId();
+  const startApp = user => mainApp.setUser(user);
+
   if (user && user.uid === groupId) {
     console.log("authenticated correctly");
     startApp(user);
