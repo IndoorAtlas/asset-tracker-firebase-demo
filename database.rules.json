@@ -1,6 +1,9 @@
 {
   "rules": {
-    ".read": "auth != null",
-    ".write": "auth != null"
+    "$group_id": {
+      ".validate": "$group_id.length < 100",
+      ".read": "$group_id === auth.uid",
+      ".write": "auth.admin == true"
+    }
   }
 }
