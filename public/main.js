@@ -65,7 +65,7 @@ function AssetView(map) {
   }
 }
 
-function runApp(map, user) {
+function runApp(map, user, vueEl) {
   //let app = firebase.app();
   //console.log(app);
   //console.log(user);
@@ -74,12 +74,20 @@ function runApp(map, user) {
   const apikey = user.uid;
   console.log(`viewing ${apikey}`);
 
-  function fetchFloorPlanWithId(floorPlanId, onSuccess, onError) {
-    const fpUrl = CLOUD_FUNCTION_URL + '/api/'+apikey+'/floor_plans/'+floorPlanId;
-    $.getJSON(fpUrl, onSuccess).fail(onError);
+  const vueApp = new Vue({
+    el: vueEl,
+    data: {  agents: []  }
+  });
+
+  function fetchFromVenueApi(path) {
+    const fpUrl = CLOUD_FUNCTION_URL + '/api/'+apikey+'/'+path;
+    return new Promise((resolve, reject) => {
+      $.getJSON(fpUrl, data => resolve(data)).fail(reject);
+    });
   }
 
-  const floorPlanManager = new FloorPlanManager(map, fetchFloorPlanWithId);
+  const floorPlanManager = new FloorPlanManager(map, fetchFromVenueApi);
+  const floorPlanCache = floorPlanManager.floorPlanCache;
   const assetView = new AssetView(map);
 
   let floorPlanId, centerCoords;
@@ -97,12 +105,34 @@ function runApp(map, user) {
       }
     }
 
+    const vueModels = [];
+
     _.keys(assets).sort().forEach(agentId => {
       const pos = assets[agentId];
       if (_.get(pos, 'location.coordinates')) {
+        const model = {
+          agentId,
+          pos,
+          floorPlan: null,
+          venue: null
+        };
+        vueModels.push(model);
+        const context = _.get(pos, 'context.indooratlas');
+        if (context.venueId) {
+          floorPlanCache.getVenue(context.venueId, (venue) => {
+            model.venue = venue;
+          });
+        }
+        if (context.floorPlanId) {
+          floorPlanCache.getFloorPlan(context.floorPlanId, (fp) => {
+            model.floorPlan = fp;
+          });
+        }
         assetView.update(agentId, pos);
       }
     });
+
+    vueApp.agents = vueModels;
   }
 
   db.ref(`${apikey}/agent_locations`).on('value', (snapshot) => {

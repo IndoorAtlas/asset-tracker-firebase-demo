@@ -37,31 +37,61 @@ function FloorPlanView(map) {
 }
 
 // handles caching of floor plan metadata and fetching it from the IA Cloud
-function FloorPlanCache(fetchFloorPlanWithId) {
-  var metadata = {};
+function FloorPlanCache(fetchFromVenueApi) {
 
-  this.fetchById = function (id, callback) {
-    // download unless cached or pending
-    if (!metadata[id]) {
-      metadata[id] = "pending";
-      fetchFloorPlanWithId(id, function (floorPlan) {
-        metadata[id] = floorPlan;
-        callback(floorPlan);
-      }, function (error) {
-        alert("Failed to fetch floor plan with ID "+id+": "+JSON.stringify(error));
+  function PromiseCache() {
+    const pending = {};
+    const values = {};
+
+    this.get = (key, promiseGetter) => {
+      if (values[key]) {
+        return Promise.resolve(values[key]);
+      }
+      if (pending[key]) {
+        return pending[key];
+      }
+      pending[key] = promiseGetter(key).then(value => {
+        delete pending[key];
+        return value;
       });
-    }
-    else if (metadata[id] != "pending") {
-      callback(floorPlan);
-    }
+      return pending[key];
+    };
+
+    this.set = (key, value) => {
+      values[key] = value;
+    };
   };
+
+  const floorPlans = new PromiseCache();
+  const venues = new PromiseCache();
+
+  this.getFloorPlan = function (id, callback) {
+    floorPlans.get(id, () => fetchFromVenueApi('floor_plans/' + id))
+    .then(callback)
+    .catch(error => {
+      alert("Failed to fetch floor plan with ID "+id+": "+JSON.stringify(error));
+    });
+  };
+
+  this.getVenue = function (venueId, callback) {
+    venues.get(venueId, () => fetchFromVenueApi('venues/' + venueId))
+    .then(venue => {
+      venue.floorPlans.forEach((floorPlan) => {
+        floorPlans.set(floorPlan.id, floorPlan);
+      });
+      callback(venue);
+    })
+    .catch(error => {
+      alert("Failed to fetch venue with ID "+venueId+": "+JSON.stringify(error));
+    });
+  }
 }
 
 // handles fetching of floor plan metadata from IA cloud & showing
 // a single floor plan
-function FloorPlanManager(map, fetchFloorPlanWithId) {
+function FloorPlanManager(map, fetchFromVenueApi) {
   var floorPlanView = new FloorPlanView(map);
-  var floorPlanCache = new FloorPlanCache(fetchFloorPlanWithId);
+  this.floorPlanCache = new FloorPlanCache(fetchFromVenueApi);
 
   // which floor plan should be visible
   var currentFloorPlanId = null;
@@ -87,10 +117,10 @@ function FloorPlanManager(map, fetchFloorPlanWithId) {
     }
   };
 
-  this.onExitFloorPlan = function(id) {
+  this.onExitFloorPlan = (id) => {
     currentFloorPlanId = null;
 
-    setTimeout(function () {
+    setTimeout(() => {
       // don't hide immediately if the callback is followed by
       // another enter floor plan event
       if (!currentFloorPlanId && visibleFloorPlan) {
@@ -99,9 +129,9 @@ function FloorPlanManager(map, fetchFloorPlanWithId) {
     }, 100);
   };
 
-  this.onEnterFloorPlan = function(id) {
+  this.onEnterFloorPlan = (id) => {
     currentFloorPlanId = id;
-    floorPlanCache.fetchById(id, function (floorPlan) {
+    this.floorPlanCache.getFloorPlan(id, function (floorPlan) {
       if (currentFloorPlanId != id) return;
       showFloorPlan(floorPlan);
     });

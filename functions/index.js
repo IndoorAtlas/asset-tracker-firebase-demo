@@ -73,8 +73,13 @@ app.post('/:apikey/auth', (req, res) => {
 
 app.get('/:apikey/floor_plans/:floorPlanId', (req, res) => {
   const fpId = req.params.floorPlanId;
-  console.log("fetching floor plan "+fpId);
   const fpUrl = POS_API_ENDPOINT + 'floor_plans/'+fpId;
+  request(fpUrl + '?key=' + req.params.apikey).pipe(res);
+});
+
+app.get('/:apikey/venues/:venueId', (req, res) => {
+  const venueId = req.params.venueId;
+  const fpUrl = POS_API_ENDPOINT + 'venues/'+venueId;
   request(fpUrl + '?key=' + req.params.apikey).pipe(res);
 });
 

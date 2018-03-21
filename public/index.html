@@ -22,14 +22,41 @@
     <link href='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.css' rel='stylesheet' />
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.5/lodash.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <style>
       body { margin:0; padding:0; }
       #map { position:absolute; top:0; bottom:0; width:100%; }
+
+      .asset-list {
+        position:absolute;
+        top: 10%;
+        left: 5%;
+        max-width: 30%;
+        min-width: 400px;
+      }
+
+      .hidden {
+        display: none;
+      }
     </style>
     </head>
     <body>
 
     <div id='map'></div>
+    <div id="vue-container" class="hidden">
+      <div class="list-group asset-list" v-if="agents.length > 0">
+        <a v-for="agent in agents" href="javascript:void(0)" class="list-group-item list-group-item-action flex-column align-items-start">
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">{{ agent.agentId }}</h6>
+            <small v-if="agent.venue">
+              {{ agent.venue.name }}
+              <span v-if="agent.floorPlan">, {{ agent.floorPlan.name }}</span>
+            </small>
+          </div>
+        </a>
+      </div>
+    </div>
     <script src="mapbox-access-token.js"></script>
     <script src="Leaflet.ImageOverlay.Rotated.js"></script>
     <script src="floorplan-view.js"></script>
@@ -55,7 +82,8 @@
         checkStart() {
           if (!this.started && this.map && this.user) {
             this.started = true;
-            runApp(this.map, this.user);
+            runApp(this.map, this.user, '#vue-container');
+            $('#vue-container').removeClass('hidden');
           }
         }
       };
