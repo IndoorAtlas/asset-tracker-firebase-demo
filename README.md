@@ -10,7 +10,7 @@ Point the agents to use the endpoint
 
 so that they PUT locations to
 
-    https://us-central1-ia-asset-tracker-demo.cloudfunctions.net/api/$API_KEY/agent/$AGENT_ID
+    https://us-central1-ia-asset-tracker-demo.cloudfunctions.net/api/$API_KEY/report/$AGENT_ID
 
 Then the agents related to that API_KEY can be inspected in the web address
 

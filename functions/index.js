@@ -15,7 +15,7 @@ const POS_API_ENDPOINT = 'https://positioning-api.indooratlas.com/v1/'
 // Automatically allow cross-origin requests
 app.use(cors());
 
-app.put('/:apikey/agent/:agentId', (req, res) => {
+app.put('/:apikey/report/:agentId', (req, res) => {
   const agentId = req.params.agentId;
   const apikey = req.params.apikey;
 
