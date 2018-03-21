@@ -68,7 +68,7 @@ function runApp(map, user, vueEl) {
   const assetView = new AssetView(map, agentId => vueApp.activateAgent(agentId));
   let assets = {};
 
-  let floorPlanId, centerCoords;
+  let floorPlanId, centerCoords, agentOnFloorPlan;
 
   const vueApp = new Vue({
     el: vueEl,
@@ -80,9 +80,16 @@ function runApp(map, user, vueEl) {
       activateAgent: function (agentId) {
         console.log("activate agent "+agentId);
         this.activeAgent = agentId;
-        floorPlanId = _.get(assets, `${agentId}.context.indooratlas.floorPlanId`);
-        if (floorPlanId) {
+        const fpId = _.get(assets, `${agentId}.context.indooratlas.floorPlanId`);
+        const doCenter = !fpId || !agentOnFloorPlan;
+        agentOnFloorPlan = !!fpId;
+
+        const coords = _.get(assets, `${agentId}.location.coordinates`);
+        if (fpId) {
           floorPlanManager.onEnterFloorPlan(floorPlanId);
+        }
+        if (coords && doCenter) {
+          map.setView(L.latLng(coords.lat, coords.lon));
         }
         drawAssets();
       }
@@ -115,15 +122,17 @@ function runApp(map, user, vueEl) {
         };
         vueModels.push(model);
         const context = _.get(pos, 'context.indooratlas');
-        if (context.venueId) {
-          floorPlanCache.getVenue(context.venueId, (venue) => {
-            model.venue = venue;
-          });
-        }
-        if (context.floorPlanId) {
-          floorPlanCache.getFloorPlan(context.floorPlanId, (fp) => {
-            model.floorPlan = fp;
-          });
+        if (context) {
+          if (context.venueId) {
+            floorPlanCache.getVenue(context.venueId, (venue) => {
+              model.venue = venue;
+            });
+          }
+          if (context.floorPlanId) {
+            floorPlanCache.getFloorPlan(context.floorPlanId, (fp) => {
+              model.floorPlan = fp;
+            });
+          }
         }
         assetView.update(agentId, pos, vueApp.activeAgent === agentId);
       }
