@@ -78,7 +78,6 @@ function runApp(map, user, vueEl) {
     },
     methods: {
       activateAgent: function (agentId) {
-        console.log("activate agent "+agentId);
         this.activeAgent = agentId;
 
         const fpId = _.get(assets, `${agentId}.context.indooratlas.floorPlanId`);
@@ -100,8 +99,9 @@ function runApp(map, user, vueEl) {
   function drawAssets() {
     if (!floorPlanId) {
       floorPlanId = getFirst(assets, 'context.indooratlas.floorPlanId');
-      console.log(`showing floor plan ${floorPlanId}`);
-      floorPlanManager.onEnterFloorPlan(floorPlanId);
+      if (floorPlanId) {
+        floorPlanManager.onEnterFloorPlan(floorPlanId);
+      }
     }
     if (!centerCoords) {
       centerCoords = getFirst(assets, 'location.coordinates');
@@ -143,6 +143,7 @@ function runApp(map, user, vueEl) {
   }
 
   db.ref(`${apikey}/agent_locations`).on('value', (snapshot) => {
+    console.log('agent data updated');
     assets = snapshot.val();
     drawAssets();
   });
