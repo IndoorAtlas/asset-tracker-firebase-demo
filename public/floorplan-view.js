@@ -75,7 +75,7 @@ function FloorPlanCache(fetchFromVenueApi) {
     floorPlans.get(id, () => fetchFromVenueApi('floor_plans/' + id))
     .then(callback)
     .catch(error => {
-      alert("Failed to fetch floor plan with ID "+id+": "+JSON.stringify(error));
+      console.error("Failed to fetch floor plan with ID "+id+": "+JSON.stringify(error));
     });
   };
 
@@ -88,7 +88,7 @@ function FloorPlanCache(fetchFromVenueApi) {
       callback(venue);
     })
     .catch(error => {
-      alert("Failed to fetch venue with ID "+venueId+": "+JSON.stringify(error));
+      console.error("Failed to fetch venue with ID "+venueId+": "+JSON.stringify(error));
     });
   }
 }
