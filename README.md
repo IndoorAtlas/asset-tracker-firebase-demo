@@ -1,5 +1,21 @@
 # IndoorAtlas asset tracker demo with Firebase
 
+### Usage
+
+First choose an API_KEY with positioning API scope enabled.
+
+Point the agents to use the endpoint
+
+    https://us-central1-ia-asset-tracker-demo.cloudfunctions.net/api/$API_KEY
+
+so that they PUT locations to
+
+    https://us-central1-ia-asset-tracker-demo.cloudfunctions.net/api/$API_KEY/agent/$AGENT_ID
+
+Then the agents related to that API_KEY can be inspected in the web address
+
+    https://ia-asset-tracker-demo.firebaseapp.com/#$API_KEY
+
 ### Setup
 
  1. `npm install -g firebase-tools`
