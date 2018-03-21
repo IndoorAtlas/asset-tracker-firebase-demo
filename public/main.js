@@ -6,7 +6,7 @@ function getFirst(assets, path) {
     .filter(c => c)[0];
 }
 
-function AssetView(map) {
+function AssetView(map, onClick) {
   const markers = {};
   let circle = null;
 
@@ -43,6 +43,7 @@ function AssetView(map) {
     }
     $(marker._icon).toggleClass('inactive-marker', !active);
     $(marker._icon).toggleClass('active-marker', active);
+    $(marker._icon).click(() => onClick(agentId));
   }
 }
 
@@ -64,7 +65,7 @@ function runApp(map, user, vueEl) {
 
   const floorPlanManager = new FloorPlanManager(map, fetchFromVenueApi);
   const floorPlanCache = floorPlanManager.floorPlanCache;
-  const assetView = new AssetView(map);
+  const assetView = new AssetView(map, agentId => vueApp.activateAgent(agentId));
   let assets = {};
 
   let floorPlanId, centerCoords;
@@ -79,6 +80,10 @@ function runApp(map, user, vueEl) {
       activateAgent: function (agentId) {
         console.log("activate agent "+agentId);
         this.activeAgent = agentId;
+        floorPlanId = _.get(assets, `${agentId}.context.indooratlas.floorPlanId`);
+        if (floorPlanId) {
+          floorPlanManager.onEnterFloorPlan(floorPlanId);
+        }
         drawAssets();
       }
     }

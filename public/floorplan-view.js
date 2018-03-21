@@ -26,6 +26,11 @@ function FloorPlanView(map) {
     }
     layers[id].addTo(map);
     visibleFloorPlans[id] = true;
+
+    // auto-center
+    map.setView(L.latLng(
+      floorPlan.image.center.lat,
+      floorPlan.image.center.lon));
   }
 
   this.hide = function(floorPlan) {
