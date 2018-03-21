@@ -16,7 +16,6 @@
     <!-- <script src="/__/firebase/4.10.1/firebase-storage.js"></script> -->
 
     <script src="/__/firebase/init.js"></script>
-    <script src="custom-auth.js"></script>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <script src='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.js'></script>
     <link href='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.css' rel='stylesheet' />
@@ -32,8 +31,17 @@
         position:absolute;
         top: 10%;
         left: 5%;
-        max-width: 30%;
+        width: 20%;
         min-width: 400px;
+        z-index: 10001;
+      }
+
+      .inactive-marker {
+        opacity: 0.5;
+      }
+
+      .active-marker {
+        z-index: 10000 !important;
       }
 
       .hidden {
@@ -46,7 +54,12 @@
     <div id='map'></div>
     <div id="vue-container" class="hidden">
       <div class="list-group asset-list" v-if="agents.length > 0">
-        <a v-for="agent in agents" href="javascript:void(0)" class="list-group-item list-group-item-action flex-column align-items-start">
+        <a
+          v-for="agent in agents"
+          v-on:click="activateAgent(agent.agentId)"
+          v-bind:class='{ active: agent.agentId === activeAgent }'
+          href="javascript:void(0)"
+          class="list-group-item list-group-item-action flex-column align-items-start">
           <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1">{{ agent.agentId }}</h6>
             <small v-if="agent.venue">
@@ -60,7 +73,6 @@
     <script src="mapbox-access-token.js"></script>
     <script src="Leaflet.ImageOverlay.Rotated.js"></script>
     <script src="floorplan-view.js"></script>
-    <script src="location-view.js"></script>
     <script>
       const map = L.mapbox.map('map', 'mapbox.light');
 
@@ -92,6 +104,7 @@
         mainApp.setMap(map);
       });
     </script>
+    <script src="custom-auth.js"></script>
     <script src="main.js"></script>
     </body>
     </html>

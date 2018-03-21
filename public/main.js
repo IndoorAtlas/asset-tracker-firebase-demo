@@ -1,16 +1,4 @@
-
-function drawAssets(map, assets) {
-  console.log(assets);
-  const orderedKeys = _.keys(assets).sort();
-  const firstFloorPlan = orderedKeys
-    .map(k => assets[k])
-    .map(a => _.get(a, 'context.indooratlas.floorPlanId'))
-    .filter(c => c)[0];
-
-  if (firstFloorPlan) {
-    console.log(firstFloorPlan);
-  }
-}
+"use strict";
 
 function getFirst(assets, path) {
   return _.keys(assets).sort().map(k => assets[k])
@@ -19,49 +7,42 @@ function getFirst(assets, path) {
 }
 
 function AssetView(map) {
-  const circles = {};
   const markers = {};
+  let circle = null;
 
   const featureGroup = L.featureGroup().addTo(map);
 
-  const ASSET_COLORS = [
-    [0, 0, 255],
-    [255, 0, 0],
-    [128, 255, 0],
-    [0, 128, 255],
-    [255, 255, 0]
-  ];
-
-  this.update = (agentId, pos) => {
+  this.update = (agentId, pos, active) => {
     const coords = pos.location.coordinates;
-    const radius = pos.location.accuracy;
     const latLon = [coords.lat, coords.lon];
 
-    let circle = circles[agentId];
+    if (active) {
+      const radius = pos.location.accuracy;
+      if (!circle) {
+        circle = L.circle(latLon, radius, {
+          //color: "#000080", // Stroke color
+          opacity: 0, // Stroke opacity
+          weight: 1, // Stroke weight
+          fillColor: "#0000ff",
+          fillOpacity: 0.1
+        })
+        .addTo(featureGroup);
+      } else {
+        circle.setLatLng(latLon);
+        circle.setRadius(radius);
+      }
+    }
 
-    if (!circle) {
+    let marker = markers[agentId];
+    if (!marker) {
       console.log(`rendering ${agentId}`);
-      const col = ASSET_COLORS[_.keys(circles).length % ASSET_COLORS.length];
-      const toRgb = col => `rgb(${col[0]}, ${col[1]}, ${col[2]})`;
-
-      circle = L.circle(latLon, radius, {
-        color: toRgb(col.map(c => Math.round(c/2))), // Stroke color
-        opacity: 0.3, // Stroke opacity
-        weight: 1, // Stroke weight
-        fillColor: toRgb(col),
-        fillOpacity: 0.02
-      })
+      marker = markers[agentId] = L.marker(latLon, {title: agentId, alt: agentId})
       .addTo(featureGroup);
-
-      markers[agentId] = L.marker(latLon, {title: agentId, alt: agentId})
-      .addTo(featureGroup);
-
-      circles[agentId] = circle;
     } else {
-      circle.setLatLng(latLon);
-      circle.setRadius(radius);
       markers[agentId].setLatLng(latLon);
     }
+    $(marker._icon).toggleClass('inactive-marker', !active);
+    $(marker._icon).toggleClass('active-marker', active);
   }
 }
 
@@ -74,11 +55,6 @@ function runApp(map, user, vueEl) {
   const apikey = user.uid;
   console.log(`viewing ${apikey}`);
 
-  const vueApp = new Vue({
-    el: vueEl,
-    data: {  agents: []  }
-  });
-
   function fetchFromVenueApi(path) {
     const fpUrl = CLOUD_FUNCTION_URL + '/api/'+apikey+'/'+path;
     return new Promise((resolve, reject) => {
@@ -89,10 +65,26 @@ function runApp(map, user, vueEl) {
   const floorPlanManager = new FloorPlanManager(map, fetchFromVenueApi);
   const floorPlanCache = floorPlanManager.floorPlanCache;
   const assetView = new AssetView(map);
+  let assets = {};
 
   let floorPlanId, centerCoords;
 
-  function drawAssets(assets) {
+  const vueApp = new Vue({
+    el: vueEl,
+    data: {
+      agents: [],
+      activeAgent: null
+    },
+    methods: {
+      activateAgent: function (agentId) {
+        console.log("activate agent "+agentId);
+        this.activeAgent = agentId;
+        drawAssets();
+      }
+    }
+  });
+
+  function drawAssets() {
     if (!floorPlanId) {
       floorPlanId = getFirst(assets, 'context.indooratlas.floorPlanId');
       console.log(`showing floor plan ${floorPlanId}`);
@@ -128,7 +120,7 @@ function runApp(map, user, vueEl) {
             model.floorPlan = fp;
           });
         }
-        assetView.update(agentId, pos);
+        assetView.update(agentId, pos, vueApp.activeAgent === agentId);
       }
     });
 
@@ -136,6 +128,7 @@ function runApp(map, user, vueEl) {
   }
 
   db.ref(`${apikey}/agent_locations`).on('value', (snapshot) => {
-    drawAssets(snapshot.val());
+    assets = snapshot.val();
+    drawAssets();
   });
 }

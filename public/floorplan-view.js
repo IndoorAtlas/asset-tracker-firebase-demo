@@ -52,6 +52,7 @@ function FloorPlanCache(fetchFromVenueApi) {
       }
       pending[key] = promiseGetter(key).then(value => {
         delete pending[key];
+        values[key] = value;
         return value;
       });
       return pending[key];
