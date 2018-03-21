@@ -1,10 +1,5 @@
 'use strict';
 
-function fetchFloorPlanWithId(floorPlanId, onSuccess, onError) {
-  const fpUrl = CLOUD_FUNCTION_URL + '/api/floor_plans/'+floorPlanId;
-  $.getJSON(fpUrl, onSuccess).fail(onError);
-}
-
 // form https://github.com/IndoorAtlas/sdk-cordova-examples/blob/master/LeafletExample/www/js/index.js
 // can hide an show multiple floor plans on a map
 function FloorPlanView(map) {
@@ -42,7 +37,7 @@ function FloorPlanView(map) {
 }
 
 // handles caching of floor plan metadata and fetching it from the IA Cloud
-function FloorPlanCache() {
+function FloorPlanCache(fetchFloorPlanWithId) {
   var metadata = {};
 
   this.fetchById = function (id, callback) {
@@ -64,9 +59,9 @@ function FloorPlanCache() {
 
 // handles fetching of floor plan metadata from IA cloud & showing
 // a single floor plan
-function FloorPlanManager(map) {
+function FloorPlanManager(map, fetchFloorPlanWithId) {
   var floorPlanView = new FloorPlanView(map);
-  var floorPlanCache = new FloorPlanCache();
+  var floorPlanCache = new FloorPlanCache(fetchFloorPlanWithId);
 
   // which floor plan should be visible
   var currentFloorPlanId = null;

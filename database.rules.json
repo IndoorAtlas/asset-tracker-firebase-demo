@@ -1,8 +1,8 @@
 {
   "rules": {
-    "$group_id": {
-      ".validate": "$group_id.length < 100",
-      ".read": "$group_id === auth.uid",
+    "$apikey": {
+      ".validate": "$apikey.length < 100",
+      ".read": "$apikey === auth.uid",
       ".write": "auth.admin == true"
     }
   }

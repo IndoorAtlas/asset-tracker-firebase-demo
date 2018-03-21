@@ -71,10 +71,15 @@ function runApp(map, user) {
   //console.log(user);
 
   const db = firebase.database();
-  const groupId = user.uid;
-  console.log(`viewing group ${groupId}`);
+  const apikey = user.uid;
+  console.log(`viewing ${apikey}`);
 
-  const floorPlanManager = new FloorPlanManager(map);
+  function fetchFloorPlanWithId(floorPlanId, onSuccess, onError) {
+    const fpUrl = CLOUD_FUNCTION_URL + '/api/'+apikey+'/floor_plans/'+floorPlanId;
+    $.getJSON(fpUrl, onSuccess).fail(onError);
+  }
+
+  const floorPlanManager = new FloorPlanManager(map, fetchFloorPlanWithId);
   const assetView = new AssetView(map);
 
   let floorPlanId, centerCoords;
@@ -100,7 +105,7 @@ function runApp(map, user) {
     });
   }
 
-  db.ref(`${groupId}/agent_locations`).on('value', (snapshot) => {
+  db.ref(`${apikey}/agent_locations`).on('value', (snapshot) => {
     drawAssets(snapshot.val());
   });
 }

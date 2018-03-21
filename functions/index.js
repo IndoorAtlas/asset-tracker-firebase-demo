@@ -10,17 +10,15 @@ admin.initializeApp({
 });
 
 const app = express();
-
-const iaTokens = require('./indooratlas-tokens.json');
 const POS_API_ENDPOINT = 'https://positioning-api.indooratlas.com/v1/'
-// secret group ID needed. Knowing this will grant read access to the data
-const GROUP_ID = iaTokens.secretAssetGroup;
 
 // Automatically allow cross-origin requests
 app.use(cors());
 
-app.put('/:agentId', (req, res) => {
+app.put('/:apikey/agent/:agentId', (req, res) => {
   const agentId = req.params.agentId;
+  const apikey = req.params.apikey;
+
   // TODO: validate agent id...
 
   const msg = req.body;
@@ -33,7 +31,7 @@ app.put('/:agentId', (req, res) => {
 
   return request({
     method: 'POST',
-    url: POS_API_ENDPOINT + 'locate?key='+iaTokens.apikey,
+    url: POS_API_ENDPOINT + 'locate?key='+apikey,
     json: msg
   }, (err, response, body) => {
     if (err || !response) {
@@ -50,7 +48,7 @@ app.put('/:agentId', (req, res) => {
     }
 
     return admin.database()
-      .ref(`${GROUP_ID}/agent_locations/${agentId}`)
+      .ref(`${apikey}/agent_locations/${agentId}`)
       .set(body)
       .then((snapshot) => {
         return res.status(200).send('ok');
@@ -62,8 +60,8 @@ app.put('/:agentId', (req, res) => {
 });
 
 // dummy authentication to disable listing all data
-app.get('/auth/:groupId', (req, res) => {
-  admin.auth().createCustomToken(req.params.groupId)
+app.post('/:apikey/auth', (req, res) => {
+  admin.auth().createCustomToken(req.params.apikey)
     .then((customToken) => {
       // Send token back to client
       return res.status(200).send(customToken);
@@ -73,15 +71,11 @@ app.get('/auth/:groupId', (req, res) => {
     });
 });
 
-app.get('/floor_plans/:floorPlanId', (req, res) => {
+app.get('/:apikey/floor_plans/:floorPlanId', (req, res) => {
   const fpId = req.params.floorPlanId;
   console.log("fetching floor plan "+fpId);
   const fpUrl = POS_API_ENDPOINT + 'floor_plans/'+fpId;
-  request(fpUrl + '?key=' + iaTokens.apikey).pipe(res);
+  request(fpUrl + '?key=' + req.params.apikey).pipe(res);
 });
 
-// Expose Express API as a single Cloud Function:
-exports.agent = functions.https.onRequest(app);
-
-// TODO: silly-method to not have only agent/auth
 exports.api = functions.https.onRequest(app);
