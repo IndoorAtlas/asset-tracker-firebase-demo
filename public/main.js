@@ -80,13 +80,14 @@ function runApp(map, user, vueEl) {
       activateAgent: function (agentId) {
         console.log("activate agent "+agentId);
         this.activeAgent = agentId;
+
         const fpId = _.get(assets, `${agentId}.context.indooratlas.floorPlanId`);
         const doCenter = !fpId || !agentOnFloorPlan;
         agentOnFloorPlan = !!fpId;
 
         const coords = _.get(assets, `${agentId}.location.coordinates`);
         if (fpId) {
-          floorPlanManager.onEnterFloorPlan(floorPlanId);
+          floorPlanManager.onEnterFloorPlan(fpId);
         }
         if (coords && doCenter) {
           map.setView(L.latLng(coords.lat, coords.lon));
