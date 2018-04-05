@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Asset Tracker Demo</string>
+    <string name="msg_cannot_start_agent_bad_config">Bad or missing config values. Not starting agent.</string>
+</resources>

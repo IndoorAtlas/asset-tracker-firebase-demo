@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:key="apiKey"
+        android:summary="API key with positioning scope enabled"
+        android:title="API key"
+        android:defaultValue="cc2a1195-ceec-43a5-9811-5c356e7b948c"
+        ></EditTextPreference>
+
+    <EditTextPreference
+        android:key="agentId"
+        android:summary="Identity of this client"
+        android:title="Agent ID"></EditTextPreference>
+
+    <EditTextPreference
+        android:key="updateInterval"
+        android:summary="Enter Update Interval in Seconds"
+        android:title="Update Interval"
+        android:defaultValue="60"
+        android:inputType="number"></EditTextPreference>
+    <EditTextPreference
+        android:key="endpoint"
+        android:summary="Asset Tracker Service endpoint URL ending with slash"
+        android:title="Service Endpoint"
+        android:defaultValue="https://us-central1-ia-asset-tracker-demo.cloudfunctions.net/api/"></EditTextPreference>
+    <Preference
+        android:key="startAgent"
+        android:title="Start Agent"/>
+    <Preference
+        android:key="stopAgent"
+        android:title="Stop Agent"/>
+    <Preference
+        android:key="myLocation"
+        android:title="My Location"/>
+</PreferenceScreen>
