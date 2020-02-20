@@ -16,20 +16,36 @@ admin.initializeApp(appOptions);
 const app = express();
 const INDOORATLAS_POS_API_ENDPOINT = 'https://positioning-api.indooratlas.com/v1/'
 
+// In practice, the lambda containers are reused for some time so this cache works
+const apiKeyCache = {
+  valid: {},
+  invalid: {}
+};
+
 // Checks that an IndoorAtlas API key has access to positioning API
 function validateIndoorAtlasApiKey(apikey) {
   console.log(`validating API key ${apikey}`);
   return new Promise((resolve, reject) => {
-    request(INDOORATLAS_POS_API_ENDPOINT + 'venues?key=' + apikey, (err, response, body) => {
+    if (apiKeyCache.valid[apikey]) {
+      console.log("API key was valid (cached)");
+      return resolve('ok');
+    } else if (apiKeyCache.invalid[apikey]) {
+      console.log("API key is still invalid (cached)");
+      return reject(new Error('forbidden'));
+    }
+
+    return request(INDOORATLAS_POS_API_ENDPOINT + 'venues?key=' + apikey, (err, response, body) => {
       if (err || !response) {
         console.error(`authentication pos API error ${err}`);
-        reject(new Error('authentication error'));
+        return reject(new Error('authentication error'));
       }
       else if (response.statusCode >= 400) {
         console.warn(`authentication HTTP error ${response.statusCode} ${JSON.stringify(body)}`);
-        reject(new Error('forbidden'));
+        apiKeyCache.invalid[apikey] = true;
+        return reject(new Error('forbidden'));
       }
       console.log("valid IndoorAtlas API key");
+      apiKeyCache.valid[apikey] = true;
       resolve('ok');
     });
   });
@@ -80,6 +96,35 @@ app.put('/:apikey/report/:agentId', (req, res) => {
       .catch((error) => {
         res.status(500).send(err);
       });
+  });
+});
+
+app.put('/:apikey/locations/:agentId', (req, res) => {
+  const apikey = req.params.apikey;
+  return validateIndoorAtlasApiKey(apikey).then(() => {
+    const agentId = req.params.agentId;
+    const body = req.body;
+
+    // TODO: validate better
+    if (!body.location || !body.location.coordinates) {
+      // location not detected
+      console.log(`missing or invalid location for ${agentId}`);
+      return res.status(400).send("invalid or missing location");
+    }
+
+    return admin.database()
+      .ref(`${apikey}/agent_locations/${agentId}`)
+      .set(body)
+      .then((snapshot) => {
+        console.log(`new directly reported location for ${agentId} (${md5(body)})`);
+        return res.status(200).send('ok');
+      })
+      .catch(err => {
+        console.error(err);
+        return res.status(500).send('Internal server error');
+      });
+  }, err => {
+    return res.status(403).send(err);
   });
 });
 
