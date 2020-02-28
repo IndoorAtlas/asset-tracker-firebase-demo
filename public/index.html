@@ -21,7 +21,7 @@
     <link href='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.css' rel='stylesheet' />
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.5/lodash.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
       integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
@@ -93,20 +93,25 @@
         </div>
         <div id="device-list-collapse" class="collapse" data-parent="#vue-container">
           <div class="list-group asset-list" v-if="agents.length > 0">
-            <a
+            <div
               v-for="agent in agents"
               v-on:click="activateAgent(agent.agentId)"
               v-bind:class='{ active: agent.agentId === activeAgent }'
-              href="javascript:void(0)"
               class="list-group-item list-group-item-action flex-column align-items-start">
               <div class="d-flex w-100 justify-content-between">
                 <b class="mb-1">{{ agent.agentId }}</b>
-                <small v-if="agent.venue">
-                  {{ agent.venue.name }}
+                <small v-if="agent.venue || agent.floorPlan || agent.traceIdUrl">
+                  <span v-if="agent.venue">{{ agent.venue.name }}</span>
                   <span v-if="agent.floorPlan">{{ agent.floorPlan.name }}</span>
+
+                  <a
+                    v-if="agent.traceIdUrl"
+                    :href="agent.traceIdUrl"
+                    target="_blank"
+                    title="Show in Session Viewer"><i class="fa fa-external-link"></i></a>
                 </small>
               </div>
-            </a>
+            </div>
           </div>
         </div>
     </div>

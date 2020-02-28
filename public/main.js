@@ -112,6 +112,12 @@ function runApp(map, user, vueEl) {
 
     const vueModels = [];
 
+    function getTraceIdUrl(pos) {
+      const traceId = _.get(pos, 'context.indooratlas.traceId');
+      if (!traceId || !SESSION_VIEWER_URL || SESSION_VIEWER_URL === '') return null;
+      return SESSION_VIEWER_URL + '/' + traceId;
+    }
+
     _.keys(assets).sort().forEach(agentId => {
       const pos = assets[agentId];
       if (_.get(pos, 'location.coordinates')) {
@@ -119,7 +125,8 @@ function runApp(map, user, vueEl) {
           agentId,
           pos,
           floorPlan: null,
-          venue: null
+          venue: null,
+          traceIdUrl: getTraceIdUrl(pos)
         };
         vueModels.push(model);
         const context = _.get(pos, 'context.indooratlas');
