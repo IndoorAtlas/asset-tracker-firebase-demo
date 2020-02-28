@@ -54,8 +54,50 @@ function validateIndoorAtlasApiKey(apikey) {
 // Automatically allow cross-origin requests
 app.use(cors());
 
+function stripAgentId(agentId) {
+  // Replace Forbidden Firebase characters with underscores
+  return agentId.replace(/[.$[\]#/]/g, '_');
+}
+
+function stripAndValidateResponseBody(body) {
+  // TODO: should use a JSON schema validator instead
+  // NOTE: Fields set to "undefined" will break Firebase, therefore all
+  // missing fields need to be set to null instead
+  try {
+    let {
+      location: { accuracy, floorNumber, coordinates: { lat, lon } },
+      context = null
+    } = body;
+
+    Object.entries({ lat, lon, accuracy, floorNumber }).forEach(([key, value]) => {
+      if (typeof value !== 'number') throw Error(`${key} = ${value} is not a number`);
+    });
+
+    if (context) {
+      const { indooratlas: { floorPlanId = null, traceId = null, venueId = null } = {}  } = context;
+      Object.entries({ floorPlanId, traceId, venueId }).forEach(([key, value]) => {
+        if (value && typeof value !== 'string') throw Error(`${key} = ${value} is not a string`);
+      });
+      context = { indooratlas: { floorPlanId, traceId, venueId }  };
+    }
+
+    return {
+      body: {
+        location: {
+          accuracy,
+          floorNumber,
+          coordinates: { lat, lon }
+        },
+        context
+      }
+    };
+  } catch (error) {
+    return { error: error.message };
+  }
+}
+
 app.put('/:apikey/report/:agentId', (req, res) => {
-  const agentId = req.params.agentId;
+  const agentId = stripAgentId(req.params.agentId);
   const apikey = req.params.apikey;
 
   const msg = req.body;
@@ -86,6 +128,9 @@ app.put('/:apikey/report/:agentId', (req, res) => {
       return res.status(200).send('ok, but not detected');
     }
 
+    const { error } = stripAndValidateResponseBody(body);
+    if (error) return res.status(500).send(error);
+
     return admin.database()
       .ref(`${apikey}/agent_locations/${agentId}`)
       .set(body)
@@ -102,14 +147,14 @@ app.put('/:apikey/report/:agentId', (req, res) => {
 app.put('/:apikey/locations/:agentId', (req, res) => {
   const apikey = req.params.apikey;
   return validateIndoorAtlasApiKey(apikey).then(() => {
-    const agentId = req.params.agentId;
-    const body = req.body;
+    const agentId = stripAgentId(req.params.agentId);
+    const { body, error } = stripAndValidateResponseBody(req.body);
 
     // TODO: validate better
-    if (!body.location || !body.location.coordinates) {
+    if (error) {
       // location not detected
-      console.log(`missing or invalid location for ${agentId}`);
-      return res.status(400).send("invalid or missing location");
+      console.log(`missing or invalid location for ${agentId}: ${error}`);
+      return res.status(400).send(`invalid or missing location ${error}`);
     }
 
     return admin.database()
