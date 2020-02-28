@@ -22,51 +22,14 @@
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.5/lodash.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <style>
-      body { margin:0; padding:0; }
-      #map { position:absolute; top:0; bottom:0; width:100%; }
-
-      #vue-container {
-        position:absolute;
-        top: 100px;
-        left: 5%;
-        width: 25%;
-        min-width: 400px;
-      }
-
-      .asset-list {
-        width: 100%;
-        z-index: 10001;
-      }
-
-      .inactive-marker {
-        opacity: 0.5;
-      }
-
-      .active-marker {
-        z-index: 10000 !important;
-      }
-
-      .list-group-item.active {
-        background-color: #ddddff;
-        border-color: rgba(0,0,0,.125);
-        color: #495057;
-      }
-
-      .hidden {
-        display: none;
-      }
-
-      #indooratlas-svg-logo {
-        fill: #007dff;
-        width: 200px;
-        height: 100px;
-        position: absolute;
-        top: 0;
-        right:30px;
-      }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+      integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+      integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="style.css"/>
     </head>
     <body>
 
@@ -120,23 +83,32 @@
     	   C385.2,66.2,380.7,69,374.7,69z"></path>
     </g>
     </svg>
-    <div id="vue-container" class="hidden">
-      <div class="list-group asset-list" v-if="agents.length > 0">
-        <a
-          v-for="agent in agents"
-          v-on:click="activateAgent(agent.agentId)"
-          v-bind:class='{ active: agent.agentId === activeAgent }'
-          href="javascript:void(0)"
-          class="list-group-item list-group-item-action flex-column align-items-start">
-          <div class="d-flex w-100 justify-content-between">
-            <b class="mb-1">{{ agent.agentId }}</b>
-            <small v-if="agent.venue">
-              {{ agent.venue.name }}
-              <span v-if="agent.floorPlan">{{ agent.floorPlan.name }}</span>
-            </small>
+    <div id="vue-container" class="hidden asset-list-window card accordion">
+        <div id="device-list-header" class="card-header">
+          <p class="mb-0 collapse-button collapsed" data-toggle="collapse" href="#device-list-collapse">
+            <a class="asset-list-btn">
+              Asset list
+            </a>
+          </p>
+        </div>
+        <div id="device-list-collapse" class="collapse" data-parent="#vue-container">
+          <div class="list-group asset-list" v-if="agents.length > 0">
+            <a
+              v-for="agent in agents"
+              v-on:click="activateAgent(agent.agentId)"
+              v-bind:class='{ active: agent.agentId === activeAgent }'
+              href="javascript:void(0)"
+              class="list-group-item list-group-item-action flex-column align-items-start">
+              <div class="d-flex w-100 justify-content-between">
+                <b class="mb-1">{{ agent.agentId }}</b>
+                <small v-if="agent.venue">
+                  {{ agent.venue.name }}
+                  <span v-if="agent.floorPlan">{{ agent.floorPlan.name }}</span>
+                </small>
+              </div>
+            </a>
           </div>
-        </a>
-      </div>
+        </div>
     </div>
     <script src="config.js"></script>
     <script src="Leaflet.ImageOverlay.Rotated.js"></script>

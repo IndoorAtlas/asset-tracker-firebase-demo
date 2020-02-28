@@ -1,0 +1,106 @@
+
+body {
+  margin:0;
+  padding:0;
+}
+
+#map {
+  position: fixed;
+  top:0;
+  bottom:0;
+  width:100%;
+  overflow: hidden;
+}
+
+.card {
+  border: none !important;
+}
+
+.asset-list-window {
+  position:absolute;
+  overflow-y: hidden;
+  box-shadow: 5px 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.asset-list-btn {
+  font-weight: bold;
+}
+
+.card-header {
+  background: #eeeeff;
+}
+
+.accordion .collapse-button:after {
+    font-family: 'FontAwesome';
+    content: "\f068";
+    float: right;
+}
+.accordion .collapse-button.collapsed:after {
+    content: "\f067";
+}
+
+#indooratlas-svg-logo {
+  fill: #007dff;
+}
+
+@media (min-width: 600px) {
+  .asset-list-window  {
+    top: 5%;
+    left: 5%;
+    width: 25%;
+    margin-bottom: 5%;
+    min-width: 400px;
+  }
+
+  #indooratlas-svg-logo {
+    width: 200px;
+    height: 100px;
+    position: fixed;
+    top: 0;
+    right:30px;
+  }
+}
+
+@media (max-width: 600px) {
+  .asset-list-window  {
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+
+  .leaflet-control-zoom {
+    display: none;
+  }
+
+  #indooratlas-svg-logo {
+    height: 70px;
+    text-align: center;
+    position: fixed;
+    bottom: 3%;
+    margin-right: auto;
+    margin-left: auto;
+  }
+}
+
+.asset-list {
+  width: 100%;
+  z-index: 10001;
+}
+
+.inactive-marker {
+  opacity: 0.5;
+}
+
+.active-marker {
+  z-index: 10000 !important;
+}
+
+.list-group-item.active {
+  background-color: #ddddff;
+  border-color: rgba(0,0,0,.125);
+  color: #495057;
+}
+
+.hidden {
+  display: none;
+}
